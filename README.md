@@ -52,12 +52,19 @@ You can open the yaml file in [Swagger Editor](https://editor.swagger.io) to vie
 Run the code-first services:
 
 uvicorn main:app --reload
+
 Then visit:
+
 http://127.0.0.1:8000/docs → Swagger UI
+
 http://127.0.0.1:8000/health → Health check
 
 Test the API-First Definition
+
 Open Swagger Editor
+
 Select File → Import File
+
 Load visibility_api.yaml
+
 View the interactive documentation and use Try It Out to simulate requests.
