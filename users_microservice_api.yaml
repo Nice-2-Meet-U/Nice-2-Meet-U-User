@@ -1,0 +1,333 @@
+openapi: 3.0.3
+info:
+  title: Users Microservice API
+  version: 1.0.0
+  description: >
+    API-first definition of the Users microservice.
+    Exposes REST resources for Profiles, Photos, and Visibility.
+
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+
+paths:
+  /profiles:
+    get:
+      summary: List all profiles
+      responses:
+        "200":
+          description: Array of profiles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProfileRead"
+    post:
+      summary: Create a new profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfileCreate"
+      responses:
+        "201":
+          description: Profile created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProfileRead"
+
+  /profiles/{profile_id}:
+    parameters:
+      - in: path
+        name: profile_id
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      summary: Get profile by ID
+      responses:
+        "200":
+          description: Profile found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProfileRead"
+        "404":
+          description: Not found
+    put:
+      summary: Update profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfileUpdate"
+      responses:
+        "200":
+          description: Updated profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProfileRead"
+    delete:
+      summary: Delete profile
+      responses:
+        "204":
+          description: Profile deleted
+
+  /photos:
+    get:
+      summary: List all photos
+      responses:
+        "200":
+          description: Array of photos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PhotoRead"
+    post:
+      summary: Create a new photo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PhotoCreate"
+      responses:
+        "201":
+          description: Photo created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PhotoRead"
+
+  /photos/{photo_id}:
+    parameters:
+      - in: path
+        name: photo_id
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      summary: Get photo by ID
+      responses:
+        "200":
+          description: Photo found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PhotoRead"
+        "404":
+          description: Not found
+    put:
+      summary: Update photo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PhotoUpdate"
+      responses:
+        "200":
+          description: Updated photo
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PhotoRead"
+    delete:
+      summary: Delete photo
+      responses:
+        "204":
+          description: Photo deleted
+
+  /visibility:
+    get:
+      summary: List all visibility records
+      responses:
+        "200":
+          description: Array of visibility records
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/VisibilityRead"
+    post:
+      summary: Create visibility record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VisibilityCreate"
+      responses:
+        "201":
+          description: Visibility record created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VisibilityRead"
+
+  /visibility/{visibility_id}:
+    parameters:
+      - in: path
+        name: visibility_id
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      summary: Get visibility record
+      responses:
+        "200":
+          description: Visibility record found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VisibilityRead"
+        "404":
+          description: Not found
+    put:
+      summary: Update visibility record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VisibilityUpdate"
+      responses:
+        "200":
+          description: Updated visibility record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VisibilityRead"
+    delete:
+      summary: Delete visibility record
+      responses:
+        "204":
+          description: Visibility record deleted
+
+components:
+  schemas:
+    ProfileCreate:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        bio:
+          type: string
+      required: [name, email]
+    ProfileUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        bio:
+          type: string
+    ProfileRead:
+      type: object
+      properties:
+        profile_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        bio:
+          type: string
+
+    PhotoCreate:
+      type: object
+      properties:
+        profile_id:
+          type: string
+          format: uuid
+        url:
+          type: string
+          format: uri
+        description:
+          type: string
+        is_primary:
+          type: boolean
+      required: [profile_id, url]
+    PhotoUpdate:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+        description:
+          type: string
+        is_primary:
+          type: boolean
+    PhotoRead:
+      type: object
+      properties:
+        photo_id:
+          type: string
+          format: uuid
+        profile_id:
+          type: string
+          format: uuid
+        url:
+          type: string
+          format: uri
+        description:
+          type: string
+        is_primary:
+          type: boolean
+        uploaded_at:
+          type: string
+          format: date-time
+
+    VisibilityCreate:
+      type: object
+      properties:
+        profile_id:
+          type: string
+          format: uuid
+        is_visible:
+          type: boolean
+        visibility_scope:
+          type: string
+          example: "normal"
+      required: [profile_id, is_visible]
+    VisibilityUpdate:
+      type: object
+      properties:
+        is_visible:
+          type: boolean
+        visibility_scope:
+          type: string
+    VisibilityRead:
+      type: object
+      properties:
+        visibility_id:
+          type: string
+          format: uuid
+        profile_id:
+          type: string
+          format: uuid
+        is_visible:
+          type: boolean
+        visibility_scope:
+          type: string
+        last_toggled_at:
+          type: string
+          format: date-time
