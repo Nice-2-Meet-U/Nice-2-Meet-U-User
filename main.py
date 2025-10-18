@@ -3,22 +3,22 @@ from __future__ import annotations
 import os
 import socket
 from datetime import datetime
-
-from typing import Dict, List
+from typing import Optional
 from uuid import UUID
 
-from fastapi import FastAPI, HTTPException
-from fastapi import Query, Path
-from typing import Optional
+from fastapi import FastAPI, HTTPException, Query, Path, status
 
 from models.profile import ProfileCreate, ProfileRead, ProfileUpdate
+from models.photos import PhotoCreate, PhotoRead, PhotoUpdate
+from models.visibility import VisibilityCreate, VisibilityRead, VisibilityUpdate
 from models.health import Health
+
 
 port = int(os.environ.get("FASTAPIPORT", 8000))
 
 app = FastAPI(
-    title="Person/Address API",
-    description="Demo FastAPI app using Pydantic v2 models for Person and Address",
+    title="Users Microservice API",
+    description="FastAPI app exposing resources for Profiles, Photos, and Visibility.",
     version="0.1.0",
 )
 
@@ -26,20 +26,21 @@ app = FastAPI(
 # Health endpoints
 # -----------------------------------------------------------------------------
 
-def make_health(echo: Optional[str], path_echo: Optional[str]=None) -> Health:
+def make_health(echo: Optional[str], path_echo: Optional[str] = None) -> Health:
     return Health(
         status=200,
         status_message="OK",
         timestamp=datetime.utcnow().isoformat() + "Z",
         ip_address=socket.gethostbyname(socket.gethostname()),
         echo=echo,
-        path_echo=path_echo
+        path_echo=path_echo,
     )
+
 
 @app.get("/health", response_model=Health)
 def get_health_no_path(echo: str | None = Query(None, description="Optional echo string")):
-    # Works because path_echo is optional in the model
     return make_health(echo=echo, path_echo=None)
+
 
 @app.get("/health/{path_echo}", response_model=Health)
 def get_health_with_path(
@@ -48,30 +49,96 @@ def get_health_with_path(
 ):
     return make_health(echo=echo, path_echo=path_echo)
 
+
 # -----------------------------------------------------------------------------
 # Profile endpoints
 # -----------------------------------------------------------------------------
 
-@app.get("/profiles", response_model=ProfileRead)
+@app.get("/profiles", response_model=list[ProfileRead])
 def list_profiles():
+    raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Not implemented")
+
 
 @app.get("/profiles/{profile_id}", response_model=ProfileRead)
 def get_profile(profile_id: UUID):
+    raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Not implemented")
 
-@app.post("/profiles", response_model=ProfileRead, status_code=201)
-def create_profile(person: ProfileCreate):
-    # Each profile gets its own UUID; stored as ProfileRead
+
+@app.post("/profiles", response_model=ProfileRead, status_code=status.HTTP_201_CREATED)
+def create_profile(profile: ProfileCreate):
     profile_read = ProfileRead(**profile.model_dump())
+    return profile_read
 
-@app.patch("/profiles/{profile_id}", response_model=ProfileRead)
+
+@app.put("/profiles/{profile_id}", response_model=ProfileRead)
 def update_profile(profile_id: UUID, update: ProfileUpdate):
+    raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Not implemented")
 
-@app.delete("/profiles/{profile_id}", status_code=204, response_model=None)
+
+@app.delete("/profiles/{profile_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_profile(profile_id: UUID):
+    raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Not implemented")
+
 
 # -----------------------------------------------------------------------------
 # Photos endpoints
 # -----------------------------------------------------------------------------
+
+@app.get("/photos", response_model=list[PhotoRead])
+def list_photos():
+    raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Not implemented")
+
+
+@app.get("/photos/{photo_id}", response_model=PhotoRead)
+def get_photo(photo_id: UUID):
+    raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Not implemented")
+
+
+@app.post("/photos", response_model=PhotoRead, status_code=status.HTTP_201_CREATED)
+def create_photo(photo: PhotoCreate):
+    photo_read = PhotoRead(**photo.model_dump())
+    return photo_read
+
+
+@app.put("/photos/{photo_id}", response_model=PhotoRead)
+def update_photo(photo_id: UUID, update: PhotoUpdate):
+    raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Not implemented")
+
+
+@app.delete("/photos/{photo_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_photo(photo_id: UUID):
+    raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Not implemented")
+
+
+# -----------------------------------------------------------------------------
+# Visibility endpoints
+# -----------------------------------------------------------------------------
+
+@app.get("/visibility", response_model=list[VisibilityRead])
+def list_visible():
+    raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Not implemented")
+
+
+@app.get("/visibility/{visibility_id}", response_model=VisibilityRead)
+def get_visibility(visibility_id: UUID):
+    raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Not implemented")
+
+
+@app.post("/visibility", response_model=VisibilityRead, status_code=status.HTTP_201_CREATED)
+def create_visibility(visibility: VisibilityCreate):
+    visibility_read = VisibilityRead(**visibility.model_dump())
+    return visibility_read
+
+
+@app.put("/visibility/{visibility_id}", response_model=VisibilityRead)
+def update_visibility(visibility_id: UUID, update: VisibilityUpdate):
+    raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Not implemented")
+
+
+@app.delete("/visibility/{visibility_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_visibility(visibility_id: UUID):
+    raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Not implemented")
+
 
 # -----------------------------------------------------------------------------
 # Root
@@ -79,6 +146,7 @@ def delete_profile(profile_id: UUID):
 @app.get("/")
 def root():
     return {"message": "Welcome to the Users API. See /docs for OpenAPI UI."}
+
 
 # -----------------------------------------------------------------------------
 # Entrypoint for `python main.py`
