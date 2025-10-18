@@ -1,7 +1,7 @@
-# Users Microservice – Sprint 1
+# Users Microservice 
 
 ## Overview
-This sprint demonstrates the design and documentation of RESTful microservices using both **code-first** and **API-first** approaches.  
+Demonstrates the design and documentation of RESTful microservices using both **code-first** and **API-first** approaches.  
 The Users microservice contains three primary resources:
 
 - **Profiles** – user profile information  
@@ -20,8 +20,6 @@ Defines CRUD endpoints for `/profiles`, including:
 - `PUT /profiles/{profile_id}` – update a profile  
 - `DELETE /profiles/{profile_id}` – delete a profile  
 
-All methods currently return **HTTP 501 (Not Implemented)** responses to illustrate the API structure.
-
 ---
 
 ### 2. Photos 
@@ -31,8 +29,6 @@ Defines CRUD endpoints for `/photos`, including:
 - `POST /photos` – upload a new photo  
 - `PUT /photos/{photo_id}` – update a photo  
 - `DELETE /photos/{photo_id}` – delete a photo  
-
-All routes currently return “Not Implemented” placeholders, but are fully documented via FastAPI’s auto-generated OpenAPI specification.
 
 ---
 
@@ -54,11 +50,12 @@ You can open the yaml file in [Swagger Editor](https://editor.swagger.io) to vie
 
 ### View FastAPI Docs
 Run the code-first services:
-```bash
+
 uvicorn main:app --reload
 Then visit:
 http://127.0.0.1:8000/docs → Swagger UI
 http://127.0.0.1:8000/health → Health check
+
 Test the API-First Definition
 Open Swagger Editor
 Select File → Import File
