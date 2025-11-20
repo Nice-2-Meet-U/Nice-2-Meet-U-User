@@ -20,6 +20,10 @@ load_dotenv()
 
 port = int(os.environ.get("FASTAPIPORT", 8000))
 
+print("CONNECT STRING:",
+      f"mysql+pymysql://{os.environ['DB_USER']}:{os.environ['DB_PASS']}@{os.environ['DB_HOST']}/{os.environ['DB_NAME']}"
+)
+
 engine = create_engine(
     f"mysql+pymysql://{os.environ['DB_USER']}:{os.environ['DB_PASS']}@{os.environ['DB_HOST']}/{os.environ['DB_NAME']}"
 )
@@ -27,7 +31,7 @@ engine = create_engine(
 with engine.connect() as conn:
     conn.execute(text("SELECT 1"))  # Test the connection
     print("Database connection established.")
-    
+
 app = FastAPI(
     title="Users Microservice API",
     description="FastAPI app exposing resources for Profiles, Photos, and Visibility.",
