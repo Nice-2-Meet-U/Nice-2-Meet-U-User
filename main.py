@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import os
 import socket
+from sqlalchemy import create_engine, text
 from datetime import datetime
 from typing import Optional
 from uuid import UUID
 
 from fastapi import FastAPI, HTTPException, Query, Path, status
+from dotenv import load_dotenv
 
 from models.profile import ProfileCreate, ProfileRead, ProfileUpdate
 from models.photos import PhotoCreate, PhotoRead, PhotoUpdate
@@ -14,8 +16,18 @@ from models.visibility import VisibilityCreate, VisibilityRead, VisibilityUpdate
 from models.health import Health
 
 
+load_dotenv()
+
 port = int(os.environ.get("FASTAPIPORT", 8000))
 
+engine = create_engine(
+    f"mysql+pymysql://{os.environ['DB_USER']}:{os.environ['DB_PASS']}@{os.environ['DB_HOST']}/{os.environ['DB_NAME']}"
+)
+
+with engine.connect() as conn:
+    conn.execute(text("SELECT 1"))  # Test the connection
+    print("Database connection established.")
+    
 app = FastAPI(
     title="Users Microservice API",
     description="FastAPI app exposing resources for Profiles, Photos, and Visibility.",
@@ -153,4 +165,4 @@ def root():
 # -----------------------------------------------------------------------------
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False)
