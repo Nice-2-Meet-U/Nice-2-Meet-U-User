@@ -40,6 +40,47 @@ class ProfileRepository:
         with self.engine.begin() as conn:
             conn.execute(text(ddl))
 
+            # Backfill missing columns/indexes for existing tables on MySQL versions
+            # that lack IF NOT EXISTS support in ALTER TABLE.
+            has_user_id = conn.execute(
+                text(
+                    """
+                    SELECT COUNT(*) FROM information_schema.COLUMNS
+                    WHERE TABLE_SCHEMA = DATABASE()
+                      AND TABLE_NAME = 'profiles'
+                      AND COLUMN_NAME = 'user_id'
+                    """
+                )
+            ).scalar()
+            if not has_user_id:
+                conn.execute(text("ALTER TABLE profiles ADD COLUMN user_id CHAR(36) NOT NULL UNIQUE"))
+
+            has_idx = conn.execute(
+                text(
+                    """
+                    SELECT COUNT(*) FROM information_schema.statistics
+                    WHERE TABLE_SCHEMA = DATABASE()
+                      AND TABLE_NAME = 'profiles'
+                      AND INDEX_NAME = 'idx_profiles_user_id'
+                    """
+                )
+            ).scalar()
+            if not has_idx:
+                conn.execute(text("ALTER TABLE profiles ADD INDEX idx_profiles_user_id (user_id)"))
+
+            has_unique = conn.execute(
+                text(
+                    """
+                    SELECT COUNT(*) FROM information_schema.table_constraints
+                    WHERE TABLE_SCHEMA = DATABASE()
+                      AND TABLE_NAME = 'profiles'
+                      AND CONSTRAINT_NAME = 'uc_profiles_user'
+                    """
+                )
+            ).scalar()
+            if not has_unique:
+                conn.execute(text("ALTER TABLE profiles ADD CONSTRAINT uc_profiles_user UNIQUE (user_id)"))
+
     def _row_to_profile(self, row: Dict) -> ProfileRead:
         return ProfileRead(
             id=row["profile_id"],

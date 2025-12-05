@@ -26,6 +26,7 @@ from models.profile import ProfileCreate, ProfileRead, ProfileUpdate
 from models.user import LoginRequest, SignupRequest, TokenResponse, UserPublic
 from models.visibility import VisibilityCreate, VisibilityRead, VisibilityUpdate
 from services.profile_repository import ProfileRepository
+from services.photo_repository import PhotoRepository
 from services.user_repository import UserRepository
 from utils.auth import TokenPayload, create_access_token, get_current_user
 
@@ -108,6 +109,7 @@ else:
 
 user_repository = UserRepository(engine)
 profile_repository = ProfileRepository(engine)
+photo_repository = PhotoRepository(engine)
 
 GOOGLE_AUTH_BASE = "https://accounts.google.com/o/oauth2/v2/auth"
 GOOGLE_TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token"
@@ -437,25 +439,72 @@ def delete_my_profile(current_user: TokenPayload = Depends(get_current_user)):
 # ----------------------------
 # Photos endpoints (stubs)
 # ----------------------------
+def _assert_profile_owner(profile_id: str, current_user: TokenPayload):
+    profile = profile_repository.get_by_id(str(profile_id))
+    if not profile:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Profile not found.")
+    if str(profile.user_id) != current_user.sub:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden.")
+    return profile
+
+
 @app.get("/photos", response_model=list[PhotoRead])
-def list_photos():
-    raise HTTPException(status_code=501, detail="Not implemented")
+def list_photos(
+    profile_id: UUID | None = Query(None),
+    current_user: TokenPayload = Depends(get_current_user),
+):
+    target_profile = (
+        profile_repository.get_by_user_id(current_user.sub)
+        if profile_id is None
+        else _assert_profile_owner(str(profile_id), current_user)
+    )
+    if not target_profile:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Profile not found.")
+    return photo_repository.list_by_profile(str(target_profile.id))
+
 
 @app.get("/photos/{photo_id}", response_model=PhotoRead)
-def get_photo(photo_id: UUID):
-    raise HTTPException(status_code=501, detail="Not implemented")
+def get_photo(photo_id: UUID, current_user: TokenPayload = Depends(get_current_user)):
+    photo = photo_repository.get(str(photo_id))
+    if not photo:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Photo not found.")
+    _assert_profile_owner(str(photo.profile_id), current_user)
+    return photo
+
 
 @app.post("/photos", response_model=PhotoRead, status_code=201)
-def create_photo(photo: PhotoCreate):
-    return PhotoRead(**photo.model_dump())
+def create_photo(photo: PhotoCreate, current_user: TokenPayload = Depends(get_current_user)):
+    _assert_profile_owner(str(photo.profile_id), current_user)
+    created = photo_repository.create(photo)
+    return created
+
 
 @app.put("/photos/{photo_id}", response_model=PhotoRead)
-def update_photo(photo_id: UUID, update: PhotoUpdate):
-    raise HTTPException(status_code=501, detail="Not implemented")
+def update_photo(
+    photo_id: UUID,
+    update: PhotoUpdate,
+    current_user: TokenPayload = Depends(get_current_user),
+):
+    existing = photo_repository.get(str(photo_id))
+    if not existing:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Photo not found.")
+    _assert_profile_owner(str(existing.profile_id), current_user)
+    updated = photo_repository.update(str(photo_id), update)
+    if not updated:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Photo not found.")
+    return updated
+
 
 @app.delete("/photos/{photo_id}", status_code=204)
-def delete_photo(photo_id: UUID):
-    raise HTTPException(status_code=501, detail="Not implemented")
+def delete_photo(photo_id: UUID, current_user: TokenPayload = Depends(get_current_user)):
+    existing = photo_repository.get(str(photo_id))
+    if not existing:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Photo not found.")
+    _assert_profile_owner(str(existing.profile_id), current_user)
+    deleted = photo_repository.delete(str(photo_id))
+    if not deleted:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Photo not found.")
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 # ----------------------------
 # Visibility endpoints (stubs)
