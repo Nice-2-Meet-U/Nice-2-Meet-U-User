@@ -68,3 +68,39 @@ Select File → Import File
 Load visibility_api.yaml
 
 View the interactive documentation and use Try It Out to simulate requests.
+
+## 🔐 Auth & Google OAuth2
+
+- Start Google login: `GET /auth/google` (redirects to Google). Callback: `GET /auth/google/callback`.
+- Local credentials: `POST /auth/signup` and `POST /auth/login` issue the same JWT as Google flow.
+- Current user: `GET /auth/me` (reads `Authorization: Bearer <token>` or `access_token` cookie).
+- Logout: `POST /auth/logout` (clears `access_token` cookie).
+
+### Required environment
+
+Set these in `.env`:
+
+```
+GOOGLE_CLIENT_ID=<oauth-client-id>
+GOOGLE_CLIENT_SECRET=<oauth-client-secret>
+GOOGLE_REDIRECT_URI=https://<host>/auth/google/callback
+JWT_SECRET=<random-long-string>
+JWT_EXPIRES_MINUTES=60
+COOKIE_SECURE=false  # set true when serving over HTTPS
+```
+
+### Running services
+
+- Users service (auth issuer): `uvicorn main:app --reload --port 8000`
+- Profiles service (protected by JWT): `uvicorn profiles_service:app --reload --port 8001`
+
+### Calling protected routes
+
+1) Hit `/auth/google` or `/auth/login` to obtain a JWT (response body includes `token` and sets `access_token` cookie).  
+2) Call the other microservice with `Authorization: Bearer <token>`. Example:
+
+```
+curl -H "Authorization: Bearer <token>" http://127.0.0.1:8001/profiles/me
+```
+
+Responses include `profile_id`, `email`, and `name` from the validated JWT.

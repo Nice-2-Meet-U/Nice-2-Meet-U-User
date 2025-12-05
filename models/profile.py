@@ -112,6 +112,11 @@ class ProfileRead(ProfileBase):
         description="Server-generated Profile ID.",
         json_schema_extra={"example": "99999999-9999-4999-8999-999999999999"},
     )
+    user_id: UUID = Field(
+        default_factory=uuid4,
+        description="User owner ID for this profile.",
+        json_schema_extra={"example": "11111111-2222-4333-8444-555555555555"},
+    )
     created_at: datetime = Field(
         default_factory=datetime.utcnow,
         description="Creation timestamp (UTC).",
@@ -128,6 +133,7 @@ class ProfileRead(ProfileBase):
             "examples": [
                 {
                     "id": "99999999-9999-4999-8999-999999999999",
+                    "user_id": "11111111-2222-4333-8444-555555555555",
                     "first_name": "Ada",
                     "last_name": "Lovelace",
                     "email": "ada@example.com",
