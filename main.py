@@ -114,13 +114,30 @@ photo_repository = PhotoRepository(engine)
 GOOGLE_AUTH_BASE = "https://accounts.google.com/o/oauth2/v2/auth"
 GOOGLE_TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token"
 COOKIE_SECURE = os.environ.get("COOKIE_SECURE", "").lower() in ("1", "true", "yes")
-FRONTEND_ORIGIN = os.environ.get("FRONTEND_ORIGIN", "http://localhost:3000").rstrip("/")
+FRONTEND_ORIGIN = os.environ.get(
+    "FRONTEND_ORIGIN", "https://nice2meetu-webapp.storage.googleapis.com"
+).rstrip("/")
 FRONTEND_CALLBACK_PATH = os.environ.get("FRONTEND_CALLBACK_PATH", "/auth/google/callback")
-FRONTEND_PROFILE_PATH = os.environ.get("FRONTEND_PROFILE_PATH", "/profile")
+FRONTEND_PROFILE_PATH = os.environ.get("FRONTEND_PROFILE_PATH", "/profile/index.html")
 FRONTEND_ONBOARDING_PATH = os.environ.get("DEFAULT_REDIRECT_PATH") or os.environ.get(
     "FRONTEND_ONBOARDING_PATH", "/onboarding"
 )
 DEFAULT_REDIRECT_PATH = os.environ.get("DEFAULT_REDIRECT_PATH", FRONTEND_ONBOARDING_PATH)
+
+
+def _cors_allowed_origins() -> list[str]:
+    """
+    Build the CORS allowlist. Supports a comma-separated env var for multiple origins
+    and falls back to the single FRONTEND_ORIGIN value.
+    """
+    raw = os.environ.get("CORS_ALLOWED_ORIGINS")
+    if raw:
+        origins = [origin.strip().rstrip("/") for origin in raw.split(",") if origin.strip()]
+        return origins or [FRONTEND_ORIGIN]
+    return [FRONTEND_ORIGIN]
+
+
+ALLOWED_ORIGINS = _cors_allowed_origins()
 
 # -----------------------------------------------------------
 # FASTAPI APP SETUP
@@ -134,7 +151,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[FRONTEND_ORIGIN],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
