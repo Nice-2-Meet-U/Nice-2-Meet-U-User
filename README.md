@@ -86,7 +86,7 @@ GOOGLE_CLIENT_SECRET=<oauth-client-secret>
 GOOGLE_REDIRECT_URI=https://<host>/auth/google/callback
 JWT_SECRET=<random-long-string>
 JWT_EXPIRES_MINUTES=60
-COOKIE_SECURE=false  # set true when serving over HTTPS
+COOKIE_SECURE=true  # required with SameSite=None on HTTPS to persist the auth cookie
 ```
 
 ### Running services

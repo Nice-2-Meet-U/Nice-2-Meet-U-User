@@ -114,6 +114,7 @@ photo_repository = PhotoRepository(engine)
 GOOGLE_AUTH_BASE = "https://accounts.google.com/o/oauth2/v2/auth"
 GOOGLE_TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token"
 COOKIE_SECURE = os.environ.get("COOKIE_SECURE", "").lower() in ("1", "true", "yes")
+COOKIE_SAMESITE = "none" if COOKIE_SECURE else "lax"
 FRONTEND_ORIGIN = os.environ.get(
     "FRONTEND_ORIGIN", "https://nice2meetu-webapp.storage.googleapis.com"
 ).rstrip("/")
@@ -247,7 +248,7 @@ def _token_response(
         value=token,
         httponly=True,
         secure=COOKIE_SECURE,
-        samesite="lax",
+        samesite=COOKIE_SAMESITE,
     )
     return response
 
